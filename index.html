@@ -112,11 +112,13 @@ a{color:var(--accent)}
     <div class="big" style="margin-top:12px">
       <div class="tile"><div class="k">Bottom radius</div><div class="v" id="r-radius"></div></div>
       <div class="tile"><div class="k">Rocker length, tip to tip</div><div class="v" id="r-length"></div></div>
-      <div class="tile"><div class="k">Front leg</div><div class="v" id="r-lf"></div></div>
-      <div class="tile"><div class="k">Back leg</div><div class="v" id="r-lr"></div></div>
+      <div class="tile"><div class="k">Back leg center, from back tip</div><div class="v" id="r-rearpos"></div></div>
+      <div class="tile"><div class="k">Front leg center, from back tip</div><div class="v" id="r-frontpos"></div></div>
+      <div class="tile"><div class="k">Front leg length</div><div class="v" id="r-lf"></div></div>
+      <div class="tile"><div class="k">Back leg length</div><div class="v" id="r-lr"></div></div>
       <div class="tile"><div class="k">Board for each rocker (cut two)</div><div class="v" id="r-blank"></div></div>
     </div>
-    <p class="sub" style="margin-top:10px;font-size:13.5px">Leg lengths run from the top of the rocker to the underside of the seat. Tenons are extra.</p>
+    <p class="sub" style="margin-top:10px;font-size:13.5px">Leg centers (white dots) are straight tape measurements from the back tip of the rocker to the mark on its top edge. Leg lengths run from the top of the rocker to the underside of the seat; tenons are extra.</p>
   </section>
 
   <section class="card">
@@ -125,8 +127,6 @@ a{color:var(--accent)}
       <div class="status" style="margin:0 0 14px"><span id="pill" class="pill"></span><span id="pilltext"></span></div>
       <h2>Layout</h2>
       <dl>
-      <dt>Back leg center from rear tip<small>Along the top edge of the rocker</small></dt><dd id="r-rearpos"></dd>
-      <dt>Front leg center from rear tip<small>Along the top edge of the rocker</small></dt><dd id="r-frontpos"></dd>
       <dt>Rocker past the back leg</dt><dd id="r-rearover"></dd>
       <dt>Rocker past the front leg</dt><dd id="r-frontover"></dd>
       <dt>Joint height at back leg<small>Floor to top of rocker, chair at rest</small></dt><dd id="r-hr"></dd>
@@ -204,7 +204,7 @@ function compute(p){
     length:2*R*Math.sin(phi/2),
     blankW:R*(1-Math.cos(phi/2))+t*Math.cos(phi/2),
     rearOver:-xr, frontOver:p.front,
-    rearPos:Ri*(ar-aRearLeg), frontPos:Ri*(ar+aFrontLeg),
+    rearPos:Math.sqrt(xr*xr+Math.pow(hr-(R-R*Math.cos(ar)),2)), frontPos:Math.sqrt((S-xr)*(S-xr)+Math.pow(hf-(R-R*Math.cos(ar)),2)),
     hr:hr, hf:hf, tilt:Math.atan((hf-hr)/S)*180/Math.PI,
     back:ar*180/Math.PI, fwd:af*180/Math.PI,
     halfChord:R*Math.sin(phi/2)
@@ -274,6 +274,7 @@ else (function(){
     s+='<text x="'+dx+'" y="'+(dy-12)+'" text-anchor="end" font-size="12" fill="var(--accent)">at the blue dot, same as couch</text>';
     var tx=(g.c+p.S)/2, ty=g.R-Math.sqrt(g.R*g.R-(tx-g.c)*(tx-g.c))+p.t/2;
     s+='<text class="t-ink" x="'+X(tx)+'" y="'+(+Y(ty)+4)+'" text-anchor="middle" font-size="11" font-weight="600">'+L(p.t)+' thick</text>';
+    s+='<circle cx="'+X(0)+'" cy="'+Y(g.hr)+'" r="3.5" fill="var(--ink)" stroke="var(--bg)" stroke-width="1"/><circle cx="'+X(p.S)+'" cy="'+Y(g.hf)+'" r="3.5" fill="var(--ink)" stroke="var(--bg)" stroke-width="1"/>';
     var sb=6*sc;
     s+='<line x1="6" x2="'+(6+sb).toFixed(1)+'" y1="16" y2="16" stroke="var(--muted)" stroke-width="1.5"/>';
     s+='<line x1="6" x2="6" y1="11" y2="21" stroke="var(--muted)" stroke-width="1.5"/><line x1="'+(6+sb).toFixed(1)+'" x2="'+(6+sb).toFixed(1)+'" y1="11" y2="21" stroke="var(--muted)" stroke-width="1.5"/>';
