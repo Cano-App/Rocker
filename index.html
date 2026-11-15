@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chair Rocker Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one column shop card. Slider on top, side-view drawing, cut numbers, then fine tuning. */
+:root{
+  --bg:#eef1ee; --surface:#ffffff; --ink:#1c2a2b; --muted:#586866; --line:#c9d2cf;
+  --accent:#1f6f8b; --wood:#d9b98a; --wood-edge:#8a6a3c;
+  --good:#2e7d4f; --warn:#a86a00; --bad:#b3372f;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a1b; --surface:#1d2526; --ink:#e6ecea; --muted:#9aa9a6; --line:#34413f;
+    --accent:#5cb8d6; --wood:#a9824f; --wood-edge:#e0c08c;
+    --good:#6cc48f; --warn:#e0a53a; --bad:#ef7d74; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141a1b; --surface:#1d2526; --ink:#e6ecea; --muted:#9aa9a6; --line:#34413f;
+  --accent:#5cb8d6; --wood:#a9824f; --wood-edge:#e0c08c;
+  --good:#6cc48f; --warn:#e0a53a; --bad:#ef7d74; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.05;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:.02em;margin:0 0 10px;text-transform:uppercase;color:var(--muted)}
+p{margin:0}
+.sub{color:var(--muted);font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.units{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.units button{font:inherit;font-size:14px;font-weight:600;padding:6px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.units button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl + .ctl{margin-top:16px}
+.ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ctl label{font-weight:500}
+.ctl output{font-family:var(--display);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctl.main output{font-size:34px;color:var(--accent)}
+.ctl small{color:var(--muted);font-size:13.5px}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;margin:0}
+.check{display:flex;align-items:center;gap:8px;font-size:14.5px;color:var(--muted)}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+svg{display:block;width:100%;height:auto}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:10px}
+.tile .k{font-size:13px;color:var(--muted)}
+.tile .v{font-family:var(--display);font-weight:600;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+@media (max-width:420px){.big{grid-template-columns:1fr 1fr}.big .tile:last-child{grid-column:1 / -1}}
+.pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;padding:4px 10px;border-radius:999px;border:1.5px solid currentColor}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px;font-size:14.5px;color:var(--muted)}
+dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:0}
+dt,dd{padding:9px 0;border-top:1px solid var(--line);margin:0}
+dl > dt:first-of-type, dl > dd:first-of-type{border-top:0}
+dt{padding-right:12px}
+dt small{display:block;color:var(--muted);font-size:13px}
+dd{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;max-width:180px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:6px 8px;border-top:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:14px;border-top:0}
+th:first-child,td:first-child{text-align:left}
+details summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+details[open] summary{margin-bottom:14px}
+ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+a{color:var(--accent)}
+.t-ink{fill:var(--ink)} .t-muted{fill:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <div>
+      <h1>Chair Rocker Calculator</h1>
+      <p class="sub">Adult chair, side view. Slide the leg spacing and the rocker resizes.</p>
+    </div>
+    <div class="units" role="group" aria-label="Units">
+      <button id="u-in" type="button" aria-pressed="true">in</button>
+      <button id="u-mm" type="button" aria-pressed="false">mm</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="ctl main">
+      <div class="row"><label for="spacing">Leg spacing, front to back</label><output id="o-spacing"></output></div>
+      <input id="spacing" type="range" min="12" max="26" step="0.25" value="18">
+      <small>Center of front leg to center of back leg, measured at the feet.</small>
+    </div>
+  </section>
+
+  <section class="card">
+    <svg id="draw" viewBox="0 0 360 260" role="img" aria-label="Side view of the rocker, both legs and the seat"></svg>
+    <div class="big" style="margin-top:12px">
+      <div class="tile"><div class="k">Bottom radius</div><div class="v" id="r-radius"></div></div>
+      <div class="tile"><div class="k">Rocker length, tip to tip</div><div class="v" id="r-length"></div></div>
+      <div class="tile"><div class="k">Board to cut it from</div><div class="v" id="r-blank"></div></div>
+    </div>
+    <div class="status"><span id="pill" class="pill"></span><span id="pilltext"></span></div>
+  </section>
+
+  <section class="card">
+    <h2>Leg lengths</h2>
+    <div class="ctl">
+      <div class="row"><span id="known-label" style="font-weight:500">Leg you already know</span>
+        <div class="units" role="group" aria-labelledby="known-label">
+          <button id="k-front" type="button" aria-pressed="true">Front</button>
+          <button id="k-back" type="button" aria-pressed="false">Back</button>
+        </div>
+      </div>
+    </div>
+    <div class="ctl">
+      <div class="row"><label for="leglen" id="leglen-label">Front leg length</label><output id="o-leglen"></output></div>
+      <input id="leglen" type="range" min="6" max="22" step="0.125" value="13">
+      <small>Top of the rocker to the underside of the seat, at the leg's center. Tenons are extra.</small>
+    </div>
+    <dl style="margin-top:14px">
+      <dt>Seat tilt used<small>Change it under Fine tuning</small></dt><dd id="r-seattilt"></dd>
+      <dt>Front leg length</dt><dd id="r-lf"></dd>
+      <dt>Back leg length</dt><dd id="r-lr"></dd>
+      <dt>Seat underside above floor at front leg</dt><dd id="r-sf"></dd>
+      <dt>Seat underside above floor at back leg</dt><dd id="r-sr"></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Cut and layout numbers</h2>
+    <dl>
+      <dt>Back leg center from rear tip<small>Along the top edge of the rocker</small></dt><dd id="r-rearpos"></dd>
+      <dt>Front leg center from rear tip<small>Along the top edge of the rocker</small></dt><dd id="r-frontpos"></dd>
+      <dt>Rocker past the back leg</dt><dd id="r-rearover"></dd>
+      <dt>Rocker past the front leg</dt><dd id="r-frontover"></dd>
+      <dt>Joint height at back leg<small>Floor to top of rocker, chair at rest</small></dt><dd id="r-hr"></dd>
+      <dt>Joint height at front leg</dt><dd id="r-hf"></dd>
+      <dt>Seat tilt if both legs are cut the same<small>Trim the difference off one pair to change it</small></dt><dd id="r-tilt"></dd>
+      <dt>Rock back before the tip runs out</dt><dd id="r-back"></dd>
+      <dt>Rock forward before the tip runs out</dt><dd id="r-fwd"></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Mark the curve without a giant compass</h2>
+    <p class="sub" style="margin-bottom:10px">Start from a straight board edge. At the midpoint the curve touches the edge. Moving out toward each end, mark the curve this far in from the edge, then join the marks with a bent batten.</p>
+    <div class="scroll"><table id="stations"><thead><tr><th>From midpoint</th><th>Curve is in from edge</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Fine tuning</summary>
+      <div class="ctl">
+        <div class="row"><label for="cg">Sitter's center of gravity above floor</label><output id="o-cg"></output></div>
+        <input id="cg" type="range" min="22" max="30" step="0.5" value="25.5">
+        <small>Roughly the height of the navel when seated in the chair on its rockers.</small>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="radius">Bottom radius</label><output id="o-radius"></output></div>
+        <input id="radius" type="range" min="32" max="52" step="0.5" value="41">
+        <label class="check"><input id="auto" type="checkbox" checked> Set radius automatically from center of gravity</label>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="bal">Balance point, ahead of back leg</label><output id="o-bal"></output></div>
+        <input id="bal" type="range" min="10" max="60" step="1" value="33">
+        <small>Where the rocker touches the floor with you seated and relaxed, as a share of the leg spacing. To measure it, sit in the chair on a dowel laid crosswise under the side rails and find where it balances.</small>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="seattilt">Seat tilt back, sitter in the chair</label><output id="o-seattilt"></output></div>
+        <input id="seattilt" type="range" min="0" max="15" step="0.5" value="8">
+        <small>Set to 8 degrees. Dining and office seats slope 2 to 5 degrees, easy chairs more, and 17 degrees has been called extreme.</small>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="depth">Rocker depth, top to bottom</label><output id="o-depth"></output></div>
+        <input id="depth" type="range" min="1.5" max="4" step="0.125" value="2.5">
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="reserve">Rock-back reserve</label><output id="o-reserve"></output></div>
+        <input id="reserve" type="range" min="12" max="40" step="1" value="25">
+        <small>How far the chair can tip back before the rear tip leaves no rocker under it. This sets the rear overhang.</small>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="front">Rocker past the front leg</label><output id="o-front"></output></div>
+        <input id="front" type="range" min="1" max="12" step="0.25" value="5">
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>What the numbers rest on</h2>
+    <ul>
+      <li><strong>Leg spacing does not set the curve.</strong> The radius comes from how high the sitter's center of gravity is. Leg spacing sets the rocker length, where the legs land on it, and the joint heights.</li>
+      <li><strong>Published:</strong> the radius must be larger than the center of gravity height. With a center of gravity about 25 to 26 in off the floor, 39 to 42 in is the reasonable range, 30 in is tippy and 80 in barely rocks (<a href="https://popularwoodworking.com/design/make-a-chair-that-rocks">Popular Woodworking</a>). Makers report 36 to 48 in overall (<a href="https://finewoodworking.com/forum/rocker-layout">Fine Woodworking forum</a>).</li>
+      <li><strong>Published:</strong> normal rocking uses only 8 to 10 in of the rocker, and extra length belongs at the rear.</li>
+      <li><strong>My own rules, not published standards:</strong> automatic radius is 1.6 times the center of gravity height (it lands in the published range at 25 to 26 in); the 25 degree rock-back reserve; the 5 in front overhang (sized by eye from a porch rocker photo); the 8 degree seat tilt, picked between the 2 to 5 degree range for upright chairs and the 17 degrees a <a href="https://woodworkersjournal.com/?p=6554">Woodworker's Journal</a> editor called extreme (no published optimum exists); the balance point default of one third. Change any of them under Fine tuning.</li>
+      <li>The geometry is exact circle math. It treats the legs as plumb when the chair is at rest. Mock up one rocker in scrap or plywood before cutting good stock.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+function compute(p){
+  var S=p.S, R=p.R, t=p.t, c=p.bal*S;
+  var rearReach=Math.max(R*Math.sin(p.reserve*Math.PI/180), c+2); // at least 2 in past back leg
+  var xr=c-rearReach, xf=S+p.front;
+  var ar=Math.asin((c-xr)/R), af=Math.asin((xf-c)/R), phi=ar+af;
+  var Ri=R-t;
+  function top(x){return R-Math.sqrt(Ri*Ri-(x-c)*(x-c));}
+  var aRearLeg=Math.asin((c-0)/Ri), aFrontLeg=Math.asin((S-c)/Ri);
+  var hr=top(0), hf=top(S);
+  return {
+    c:c, xr:xr, xf:xf, ar:ar, af:af, R:R, Ri:Ri,
+    length:2*R*Math.sin(phi/2),
+    blankW:R*(1-Math.cos(phi/2))+t*Math.cos(phi/2),
+    rearOver:-xr, frontOver:p.front,
+    rearPos:Ri*(ar-aRearLeg), frontPos:Ri*(ar+aFrontLeg),
+    hr:hr, hf:hf, tilt:Math.atan((hf-hr)/S)*180/Math.PI,
+    back:ar*180/Math.PI, fwd:af*180/Math.PI,
+    halfChord:R*Math.sin(phi/2)
+  };
+}
+function legs(p,g){
+  var rise=p.S*Math.tan(p.seattilt*Math.PI/180), o={};
+  if(p.known==='front'){o.Lf=p.leglen;o.seatF=g.hf+o.Lf;o.seatR=o.seatF-rise;o.Lr=o.seatR-g.hr;}
+  else{o.Lr=p.leglen;o.seatR=g.hr+o.Lr;o.seatF=o.seatR+rise;o.Lf=o.seatF-g.hf;}
+  o.slope=rise/p.S; return o;
+}
+if(typeof module!=='undefined'){module.exports={compute:compute,legs:legs};}
+else (function(){
+  var $=function(id){return document.getElementById(id);};
+  var unit='in', known='front';
+  function frac(v){
+    var s=Math.round(Math.abs(v)*16), w=Math.floor(s/16), n=s%16, d=16;
+    while(n && n%2===0){n/=2;d/=2;}
+    return (w||!n?w:'')+(n?(w?' ':'')+n+'/'+d:'')+'″';
+  }
+  function L(v){return unit==='in'?frac(v):Math.round(v*25.4)+' mm';}
+  function autoR(cg){return Math.min(48,Math.max(36,Math.round(1.6*cg*2)/2));}
+  function read(){
+    var cg=+$('cg').value;
+    if($('auto').checked){$('radius').value=autoR(cg);}
+    $('radius').disabled=$('auto').checked;
+    return {S:+$('spacing').value,R:+$('radius').value,t:+$('depth').value,bal:+$('bal').value/100,
+            reserve:+$('reserve').value,front:+$('front').value,cg:cg,
+            known:known,leglen:+$('leglen').value,seattilt:+$('seattilt').value};
+  }
+  function draw(p,g,k){
+    var pad=3, legW=1.5, Lf=Math.max(k.Lf,0.5), Lr=Math.max(k.Lr,0.5);
+    function seatY(x){return k.seatR+x*k.slope;}
+    var maxTop=Math.max(seatY(p.S+2),seatY(-1.5))+1;
+    var wW=(g.xf-g.xr)+pad*2, wH=maxTop+10.5;
+    var sc=Math.min(360/wW,260/wH);
+    var ox=(360-wW*sc)/2-(g.xr-pad)*sc, fy=260-7*sc;
+    function X(x){return (ox+x*sc).toFixed(1);} function Y(y){return (fy-y*sc).toFixed(1);}
+    var pts=[],i,a,n=36;
+    for(i=0;i<=n;i++){a=-g.ar+(g.ar+g.af)*i/n;pts.push(X(g.c+g.R*Math.sin(a))+','+Y(g.R-g.R*Math.cos(a)));}
+    for(i=n;i>=0;i--){a=-g.ar+(g.ar+g.af)*i/n;pts.push(X(g.c+g.Ri*Math.sin(a))+','+Y(g.R-g.Ri*Math.cos(a)));}
+    function leg(x,h,len){return '<rect x="'+X(x-legW/2)+'" y="'+Y(h+len)+'" width="'+(legW*sc).toFixed(1)+'" height="'+(len*sc+2).toFixed(1)+'" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>';}
+    var dimY=Y(maxTop+1.4);
+    var s='';
+    s+='<line x1="0" x2="360" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="var(--muted)" stroke-width="1.5"/>';
+    s+=leg(0,g.hr-0.3,Lr+0.3)+leg(p.S,g.hf-0.3,Lf+0.3);
+    s+='<polygon points="'+X(-1.5)+','+Y(seatY(-1.5))+' '+X(p.S+2)+','+Y(seatY(p.S+2))+' '+X(p.S+2)+','+Y(seatY(p.S+2)+1)+' '+X(-1.5)+','+Y(seatY(-1.5)+1)+'" fill="var(--wood)" stroke="var(--wood-edge)" stroke-width="1.5" stroke-linejoin="round"/>';
+    s+='<text class="t-ink" x="'+X(-1.4)+'" y="'+Y(g.hr+Lr/2)+'" text-anchor="end" font-size="12" font-weight="600">'+L(k.Lr)+'</text>';
+    s+='<text class="t-ink" x="'+X(p.S+1.4)+'" y="'+Y(g.hf+Lf/2)+'" font-size="12" font-weight="600">'+L(k.Lf)+'</text>';
+    s+='<polygon points="'+pts.join(' ')+'" fill="var(--wood)" stroke="var(--wood-edge)" stroke-width="1.5" stroke-linejoin="round"/>';
+    s+='<line x1="'+X(g.c)+'" x2="'+X(g.c)+'" y1="'+Y(0)+'" y2="'+Y(seatY(g.c))+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+    s+='<circle cx="'+X(g.c)+'" cy="'+Y(0)+'" r="4" fill="var(--accent)"/>';
+    s+='<line x1="'+X(0)+'" x2="'+X(p.S)+'" y1="'+dimY+'" y2="'+dimY+'" stroke="var(--muted)" stroke-width="1"/>';
+    s+='<text class="t-ink" x="'+X(p.S/2)+'" y="'+(dimY-5)+'" text-anchor="middle" font-size="13" font-weight="600">'+L(p.S)+'</text>';
+    s+='<text class="t-muted" x="'+X(g.xr)+'" y="'+(+Y(0)+16)+'" font-size="12">back</text>';
+    s+='<text class="t-muted" x="'+X(g.xf)+'" y="'+(+Y(0)+16)+'" text-anchor="end" font-size="12">front</text>';
+    s+='<text x="'+X(g.c)+'" y="'+(+Y(0)+16)+'" text-anchor="middle" font-size="12" fill="var(--accent)" font-weight="600">balance point</text>';
+    var ly=+Y(0)+30;
+    s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xf)+'" y1="'+ly+'" y2="'+ly+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xr)+'" y1="'+(ly-7)+'" y2="'+(ly+7)+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<line x1="'+X(g.xf)+'" x2="'+X(g.xf)+'" y1="'+(ly-7)+'" y2="'+(ly+7)+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text class="t-ink" x="'+X((g.xr+g.xf)/2)+'" y="'+(ly+17)+'" text-anchor="middle" font-size="13" font-weight="600">Rocker length '+L(g.length)+'</text>';
+    $('draw').innerHTML=s;
+  }
+  function update(){
+    var p=read(), g=compute(p);
+    $('o-spacing').textContent=L(p.S); $('o-cg').textContent=L(p.cg); $('o-radius').textContent=L(p.R);
+    $('o-bal').textContent=Math.round(p.bal*100)+'% ('+L(g.c)+')'; $('o-depth').textContent=L(p.t);
+    $('o-reserve').textContent=p.reserve+'°'; $('o-front').textContent=L(p.front);
+    $('r-radius').textContent=L(p.R); $('r-length').textContent=L(g.length);
+    var bl=unit==='in'?Math.ceil(g.length+1):g.length+1, bw=unit==='in'?Math.ceil(g.blankW*4)/4:g.blankW;
+    $('r-blank').textContent=L(bl)+' × '+L(bw);
+    $('r-rearpos').textContent=L(g.rearPos); $('r-frontpos').textContent=L(g.frontPos);
+    $('r-rearover').textContent=L(g.rearOver); $('r-frontover').textContent=L(g.frontOver);
+    $('r-hr').textContent=L(g.hr); $('r-hf').textContent=L(g.hf);
+    $('r-tilt').textContent=Math.abs(g.tilt).toFixed(1)+'° '+(g.tilt>=0?'back':'forward')+' ('+L(Math.abs(g.hf-g.hr))+')';
+    $('r-back').textContent=g.back.toFixed(1)+'°'; $('r-fwd').textContent=g.fwd.toFixed(1)+'°';
+    var m=p.R-p.cg, cls, word, txt;
+    if(m<6){cls='bad';word='Tippy';txt='Radius is only '+L(m)+' above the center of gravity. Use a larger radius.';}
+    else if(m<11){cls='warn';word='Quick';txt='Radius is '+L(m)+' above the center of gravity. Fast, lively rock.';}
+    else if(m<=20){cls='good';word='Balanced';txt='Radius is '+L(m)+' above the center of gravity.';}
+    else{cls='warn';word='Slow';txt='Radius is '+L(m)+' above the center of gravity. Flat, lazy rock.';}
+    $('pill').className='pill '+cls; $('pill').textContent=word; $('pilltext').textContent=txt;
+    var step=unit==='in'?3:75/25.4, rows='', d;
+    for(d=step;d<g.halfChord;d+=step){rows+='<tr><td>'+L(d)+'</td><td>'+L(p.R-Math.sqrt(p.R*p.R-d*d))+'</td></tr>';}
+    d=g.halfChord; rows+='<tr><td>'+L(d)+' (tip)</td><td>'+L(p.R-Math.sqrt(p.R*p.R-d*d))+'</td></tr>';
+    document.querySelector('#stations tbody').innerHTML=rows;
+    var k=legs(p,g), bad=k.Lf<1||k.Lr<1;
+    $('leglen-label').textContent=(known==='front'?'Front':'Back')+' leg length';
+    $('o-leglen').textContent=L(p.leglen); $('o-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0'; $('r-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0 back';
+    $('r-lf').textContent=k.Lf<1?'Too short. Lengthen the known leg or reduce tilt.':L(k.Lf);
+    $('r-lr').textContent=k.Lr<1?'Too short. Lengthen the known leg or reduce tilt.':L(k.Lr);
+    $('r-sf').textContent=bad?'\u2013':L(k.seatF); $('r-sr').textContent=bad?'\u2013':L(k.seatR);
+    draw(p,g,k);
+  }
+  ['spacing','cg','radius','bal','depth','reserve','front','auto','leglen','seattilt'].forEach(function(id){$(id).addEventListener('input',update);});
+  function setUnit(u){unit=u;$('u-in').setAttribute('aria-pressed',u==='in');$('u-mm').setAttribute('aria-pressed',u==='mm');update();}
+  function setKnown(v){
+    var p=read(), k=legs(p,compute(p)); known=v;
+    $('leglen').value=Math.min(22,Math.max(6,v==='front'?k.Lf:k.Lr));
+    $('k-front').setAttribute('aria-pressed',v==='front');$('k-back').setAttribute('aria-pressed',v==='back');update();}
+  $('k-front').addEventListener('click',function(){if(known!=='front')setKnown('front');});
+  $('k-back').addEventListener('click',function(){if(known!=='back')setKnown('back');});
+  $('u-in').addEventListener('click',function(){setUnit('in');});
+  $('u-mm').addEventListener('click',function(){setUnit('mm');});
+  update();
+})();
+</script>
+</body>
+</html>
