@@ -239,7 +239,7 @@ else (function(){
     function seatY(x){return k.seatR+x*k.slope;}
     var tv=p.seatT/Math.cos(Math.atan(k.slope));
     var maxTop=Math.max(seatY(p.S+2),seatY(-1.5))+tv;
-    var wW=(g.xf-g.xr)+pad*2, wH=maxTop+12.8;
+    var wW=(g.xf-g.xr)+pad*2, wH=maxTop+13.5;
     var sc=Math.min(360/wW,260/wH);
     var ox=(360-wW*sc)/2-(g.xr-pad)*sc, fy=260-7*sc;
     function X(x){return (ox+x*sc).toFixed(1);} function Y(y){return (fy-y*sc).toFixed(1);}
@@ -247,7 +247,7 @@ else (function(){
     for(i=0;i<=n;i++){a=-g.ar+(g.ar+g.af)*i/n;pts.push(X(g.c+g.R*Math.sin(a))+','+Y(g.R-g.R*Math.cos(a)));}
     for(i=n;i>=0;i--){a=-g.ar+(g.ar+g.af)*i/n;pts.push(X(g.c+g.Ri*Math.sin(a))+','+Y(g.R-g.Ri*Math.cos(a)));}
     function leg(x,h,len){return '<rect x="'+X(x-legW/2)+'" y="'+Y(h+len)+'" width="'+(legW*sc).toFixed(1)+'" height="'+(len*sc+2).toFixed(1)+'" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>';}
-    var dimY=Y(maxTop+1.4);
+    var dimY=Y(maxTop+3.8);
     var s='';
     s+='<line x1="0" x2="360" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="var(--muted)" stroke-width="1.5"/>';
     s+=leg(0,g.hr-0.3,Lr+0.3)+leg(p.S,g.hf-0.3,Lf+0.3);
@@ -255,16 +255,19 @@ else (function(){
     s+='<text class="t-ink" x="'+X(-1.4)+'" y="'+Y(g.hr+Lr/2)+'" text-anchor="end" font-size="12" font-weight="600">'+L(k.Lr)+'</text>';
     s+='<text class="t-ink" x="'+X(p.S+1.4)+'" y="'+Y(g.hf+Lf/2)+'" font-size="12" font-weight="600">'+L(k.Lf)+'</text>';
     s+='<polygon points="'+pts.join(' ')+'" fill="var(--wood)" stroke="var(--wood-edge)" stroke-width="1.5" stroke-linejoin="round"/>';
-    s+='<line x1="'+X(g.c)+'" x2="'+X(g.c)+'" y1="'+Y(0)+'" y2="'+(dimY-20)+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+    s+='<line x1="'+X(g.c)+'" x2="'+X(g.c)+'" y1="'+Y(0)+'" y2="'+Y(seatY(g.c)+tv)+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>';
     s+='<circle cx="'+X(g.c)+'" cy="'+Y(0)+'" r="4" fill="var(--accent)"/>';
     s+='<line x1="'+X(0)+'" x2="'+X(p.S)+'" y1="'+dimY+'" y2="'+dimY+'" stroke="var(--muted)" stroke-width="1"/>';
-    s+='<text class="t-ink" x="'+X(p.S*0.62)+'" y="'+(dimY-5)+'" text-anchor="middle" font-size="13" font-weight="600">'+L(p.S)+'</text>';
+    s+='<text class="t-ink" x="'+X(p.S/2)+'" y="'+(dimY-5)+'" text-anchor="middle" font-size="13" font-weight="600">'+L(p.S)+'</text>';
     s+='<text class="t-muted" x="'+X(g.xr)+'" y="'+(+Y(0)+16)+'" font-size="12">back</text>';
     s+='<text class="t-muted" x="'+X(g.xf)+'" y="'+(+Y(0)+16)+'" text-anchor="end" font-size="12">front</text>';
     s+='<text x="'+X(g.c)+'" y="'+(+Y(0)+16)+'" text-anchor="middle" font-size="12" fill="var(--accent)" font-weight="600">balance point</text>';
     s+='<circle cx="'+X(g.c)+'" cy="'+Y(seatY(g.c)+tv)+'" r="4" fill="var(--accent)"/>';
-    s+='<text x="'+X(g.c)+'" y="'+(dimY-25)+'" text-anchor="middle" font-size="13" font-weight="600" fill="var(--accent)">Same height as couch: '+L(seatY(g.c)+tv)+'</text>';
-    s+='<text class="t-muted" x="'+X(g.xr)+'" y="'+(+Y(g.R-g.Ri*Math.cos(g.ar))-7)+'" font-size="12">'+L(p.t)+' thick</text>';
+    var dy=+Y(seatY(g.c)+tv), dx=+X(g.c)+30;
+    s+='<text x="'+dx+'" y="'+(dy-27)+'" text-anchor="end" font-size="13" font-weight="600" fill="var(--accent)">'+L(seatY(g.c)+tv)+' floor to top of seat</text>';
+    s+='<text x="'+dx+'" y="'+(dy-12)+'" text-anchor="end" font-size="12" fill="var(--accent)">at the blue dot, same as couch</text>';
+    var tx=(g.c+p.S)/2, ty=g.R-Math.sqrt(g.R*g.R-(tx-g.c)*(tx-g.c))+p.t/2;
+    s+='<text class="t-ink" x="'+X(tx)+'" y="'+(+Y(ty)+4)+'" text-anchor="middle" font-size="11" font-weight="600">'+L(p.t)+' thick</text>';
     var ly=+Y(0)+30;
     s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xf)+'" y1="'+ly+'" y2="'+ly+'" stroke="var(--ink)" stroke-width="1.5"/>';
     s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xr)+'" y1="'+(ly-7)+'" y2="'+(ly+7)+'" stroke="var(--ink)" stroke-width="1.5"/>';
