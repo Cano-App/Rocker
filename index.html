@@ -97,19 +97,19 @@ a{color:var(--accent)}
       <small>Center of front leg to center of back leg, measured at the feet.</small>
     </div>
     <div class="ctl">
-      <div class="row"><label for="thick">Rocker width, side to side</label><output id="o-thick"></output></div>
-      <input id="thick" type="range" min="0.75" max="3" step="0.125" value="1.25">
-      <small>A store-bought adult runner is 1 1/4 in wide. Go wider if your leg joint needs it.</small>
+      <div class="row"><label for="depth">Rocker thickness, side view</label><output id="o-depth"></output></div>
+      <input id="depth" type="range" min="1.5" max="4" step="0.125" value="2.5">
+      <small>Top edge to bottom edge. A store-bought adult runner is 1 5/8 in.</small>
     </div>
   </section>
 
   <section class="card">
     <svg id="draw" viewBox="0 0 360 260" role="img" aria-label="Side view of the rocker, both legs and the seat"></svg>
-    <p class="sub" style="margin-top:8px;font-size:13.5px">Blue dashed line is the balance point. The blue number is floor to top of seat at that point.</p>
+    <p class="sub" style="margin-top:8px;font-size:13.5px">Blue dashed line is the balance point. The blue number is floor to top of seat at that point, which should match your couch seat.</p>
     <div class="big" style="margin-top:12px">
       <div class="tile"><div class="k">Bottom radius</div><div class="v" id="r-radius"></div></div>
       <div class="tile"><div class="k">Rocker length, tip to tip</div><div class="v" id="r-length"></div></div>
-      <div class="tile"><div class="k">Board for each rocker (cut two): length, height, width</div><div class="v" id="r-blank"></div></div>
+      <div class="tile"><div class="k">Board for each rocker (cut two)</div><div class="v" id="r-blank"></div></div>
     </div>
     <div class="status"><span id="pill" class="pill"></span><span id="pilltext"></span></div>
   </section>
@@ -133,7 +133,7 @@ a{color:var(--accent)}
       <dt>Seat tilt used<small>Change it under Fine tuning</small></dt><dd id="r-seattilt"></dd>
       <dt>Front leg length</dt><dd id="r-lf"></dd>
       <dt>Back leg length</dt><dd id="r-lr"></dd>
-      <dt>Floor to top of seat at the balance point</dt><dd id="r-baltop"></dd>
+      <dt>Floor to top of seat at the balance point<small>Same height as couch</small></dt><dd id="r-baltop"></dd>
       <dt>Seat underside above floor at front leg</dt><dd id="r-sf"></dd>
       <dt>Seat underside above floor at back leg</dt><dd id="r-sr"></dd>
     </dl>
@@ -186,10 +186,6 @@ a{color:var(--accent)}
       <div class="ctl">
         <div class="row"><label for="seatt">Seat thickness</label><output id="o-seatt"></output></div>
         <input id="seatt" type="range" min="0.5" max="2.5" step="0.125" value="1">
-      </div>
-      <div class="ctl">
-        <div class="row"><label for="depth">Rocker depth, top to bottom</label><output id="o-depth"></output></div>
-        <input id="depth" type="range" min="1.5" max="4" step="0.125" value="2.5">
       </div>
       <div class="ctl">
         <div class="row"><label for="reserve">Rock-back reserve</label><output id="o-reserve"></output></div>
@@ -261,14 +257,14 @@ else (function(){
     return {S:+$('spacing').value,R:+$('radius').value,t:+$('depth').value,bal:+$('bal').value/100,
             reserve:+$('reserve').value,front:+$('front').value,cg:cg,
             known:known,leglen:+$('leglen').value,seattilt:+$('seattilt').value,
-            thick:+$('thick').value,seatT:+$('seatt').value};
+            seatT:+$('seatt').value};
   }
   function draw(p,g,k){
     var pad=3, legW=1.5, Lf=Math.max(k.Lf,0.5), Lr=Math.max(k.Lr,0.5);
     function seatY(x){return k.seatR+x*k.slope;}
     var tv=p.seatT/Math.cos(Math.atan(k.slope));
     var maxTop=Math.max(seatY(p.S+2),seatY(-1.5))+tv;
-    var wW=(g.xf-g.xr)+pad*2, wH=maxTop+10.5;
+    var wW=(g.xf-g.xr)+pad*2, wH=maxTop+12.8;
     var sc=Math.min(360/wW,260/wH);
     var ox=(360-wW*sc)/2-(g.xr-pad)*sc, fy=260-7*sc;
     function X(x){return (ox+x*sc).toFixed(1);} function Y(y){return (fy-y*sc).toFixed(1);}
@@ -284,14 +280,16 @@ else (function(){
     s+='<text class="t-ink" x="'+X(-1.4)+'" y="'+Y(g.hr+Lr/2)+'" text-anchor="end" font-size="12" font-weight="600">'+L(k.Lr)+'</text>';
     s+='<text class="t-ink" x="'+X(p.S+1.4)+'" y="'+Y(g.hf+Lf/2)+'" font-size="12" font-weight="600">'+L(k.Lf)+'</text>';
     s+='<polygon points="'+pts.join(' ')+'" fill="var(--wood)" stroke="var(--wood-edge)" stroke-width="1.5" stroke-linejoin="round"/>';
-    s+='<line x1="'+X(g.c)+'" x2="'+X(g.c)+'" y1="'+Y(0)+'" y2="'+Y(seatY(g.c)+tv)+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+    s+='<line x1="'+X(g.c)+'" x2="'+X(g.c)+'" y1="'+Y(0)+'" y2="'+(dimY-20)+'" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>';
     s+='<circle cx="'+X(g.c)+'" cy="'+Y(0)+'" r="4" fill="var(--accent)"/>';
     s+='<line x1="'+X(0)+'" x2="'+X(p.S)+'" y1="'+dimY+'" y2="'+dimY+'" stroke="var(--muted)" stroke-width="1"/>';
-    s+='<text class="t-ink" x="'+X(p.S/2)+'" y="'+(dimY-5)+'" text-anchor="middle" font-size="13" font-weight="600">'+L(p.S)+'</text>';
+    s+='<text class="t-ink" x="'+X(p.S*0.62)+'" y="'+(dimY-5)+'" text-anchor="middle" font-size="13" font-weight="600">'+L(p.S)+'</text>';
     s+='<text class="t-muted" x="'+X(g.xr)+'" y="'+(+Y(0)+16)+'" font-size="12">back</text>';
     s+='<text class="t-muted" x="'+X(g.xf)+'" y="'+(+Y(0)+16)+'" text-anchor="end" font-size="12">front</text>';
     s+='<text x="'+X(g.c)+'" y="'+(+Y(0)+16)+'" text-anchor="middle" font-size="12" fill="var(--accent)" font-weight="600">balance point</text>';
-    s+='<text x="'+(+X(g.c)+5)+'" y="'+Y((g.hr+seatY(g.c))/2)+'" font-size="13" font-weight="600" fill="var(--accent)">'+L(seatY(g.c)+tv)+'</text>';
+    s+='<circle cx="'+X(g.c)+'" cy="'+Y(seatY(g.c)+tv)+'" r="4" fill="var(--accent)"/>';
+    s+='<text x="'+X(g.c)+'" y="'+(dimY-25)+'" text-anchor="middle" font-size="13" font-weight="600" fill="var(--accent)">Same height as couch: '+L(seatY(g.c)+tv)+'</text>';
+    s+='<text class="t-muted" x="'+X(g.xr)+'" y="'+(+Y(g.R-g.Ri*Math.cos(g.ar))-7)+'" font-size="12">'+L(p.t)+' thick</text>';
     var ly=+Y(0)+30;
     s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xf)+'" y1="'+ly+'" y2="'+ly+'" stroke="var(--ink)" stroke-width="1.5"/>';
     s+='<line x1="'+X(g.xr)+'" x2="'+X(g.xr)+'" y1="'+(ly-7)+'" y2="'+(ly+7)+'" stroke="var(--ink)" stroke-width="1.5"/>';
@@ -306,8 +304,8 @@ else (function(){
     $('o-reserve').textContent=p.reserve+'°'; $('o-front').textContent=L(p.front);
     $('r-radius').textContent=L(p.R); $('r-length').textContent=L(g.length);
     var bl=unit==='in'?Math.ceil(g.length+1):g.length+1, bw=unit==='in'?Math.ceil(g.blankW*4)/4:g.blankW;
-    $('r-blank').textContent=L(bl)+' × '+L(bw)+' × '+L(p.thick);
-    $('o-thick').textContent=L(p.thick); $('o-seatt').textContent=L(p.seatT);
+    $('r-blank').textContent=L(bl)+' × '+L(bw);
+    $('o-seatt').textContent=L(p.seatT);
     $('r-rearpos').textContent=L(g.rearPos); $('r-frontpos').textContent=L(g.frontPos);
     $('r-rearover').textContent=L(g.rearOver); $('r-frontover').textContent=L(g.frontOver);
     $('r-hr').textContent=L(g.hr); $('r-hf').textContent=L(g.hf);
@@ -332,7 +330,7 @@ else (function(){
     $('r-sf').textContent=bad?'\u2013':L(k.seatF); $('r-sr').textContent=bad?'\u2013':L(k.seatR);
     draw(p,g,k);
   }
-  ['spacing','cg','radius','bal','depth','reserve','front','auto','leglen','seattilt','thick','seatt'].forEach(function(id){$(id).addEventListener('input',update);});
+  ['spacing','cg','radius','bal','depth','reserve','front','auto','leglen','seattilt','seatt'].forEach(function(id){$(id).addEventListener('input',update);});
   function setUnit(u){unit=u;$('u-in').setAttribute('aria-pressed',u==='in');$('u-mm').setAttribute('aria-pressed',u==='mm');update();}
   function setKnown(v){
     var p=read(), k=legs(p,compute(p)); known=v;
