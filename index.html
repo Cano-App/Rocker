@@ -116,24 +116,12 @@ a{color:var(--accent)}
 
   <section class="card">
     <h2>Leg lengths</h2>
-    <div class="ctl">
-      <div class="row"><span id="known-label" style="font-weight:500">Leg you already know</span>
-        <div class="units" role="group" aria-labelledby="known-label">
-          <button id="k-front" type="button" aria-pressed="true">Front</button>
-          <button id="k-back" type="button" aria-pressed="false">Back</button>
-        </div>
-      </div>
-    </div>
-    <div class="ctl">
-      <div class="row"><label for="leglen" id="leglen-label">Front leg length</label><output id="o-leglen"></output></div>
-      <input id="leglen" type="range" min="6" max="22" step="0.125" value="13">
-      <small>Top of the rocker to the underside of the seat, at the leg's center. Tenons are extra.</small>
-    </div>
+    <p class="sub">Worked out from the couch height: floor to top of seat at the balance point is locked at <strong id="o-couch2"></strong>. Lengths run from the top of the rocker to the underside of the seat, at each leg's center. Tenons are extra.</p>
     <dl style="margin-top:14px">
       <dt>Seat tilt used<small>Change it under Fine tuning</small></dt><dd id="r-seattilt"></dd>
       <dt>Front leg length</dt><dd id="r-lf"></dd>
       <dt>Back leg length</dt><dd id="r-lr"></dd>
-      <dt>Floor to top of seat at the balance point<small>Same height as couch</small></dt><dd id="r-baltop"></dd>
+      <dt>Floor to top of seat at the balance point<small>Locked. Same height as couch</small></dt><dd id="r-baltop"></dd>
       <dt>Seat underside above floor at front leg</dt><dd id="r-sf"></dd>
       <dt>Seat underside above floor at back leg</dt><dd id="r-sr"></dd>
     </dl>
@@ -164,9 +152,14 @@ a{color:var(--accent)}
     <details>
       <summary>Fine tuning</summary>
       <div class="ctl">
+        <div class="row"><label for="couch">Couch height, floor to top of seat</label><output id="o-couch"></output></div>
+        <input id="couch" type="range" min="10" max="22" step="0.25" value="13">
+        <small>Locked at 13 in. The leg lengths are worked out from this.</small>
+      </div>
+      <div class="ctl">
         <div class="row"><label for="cg">Sitter's center of gravity above floor</label><output id="o-cg"></output></div>
-        <input id="cg" type="range" min="22" max="30" step="0.5" value="25.5">
-        <small>Roughly the height of the navel when seated in the chair on its rockers.</small>
+        <input id="cg" type="range" min="18" max="30" step="0.5" value="21.5">
+        <small>Roughly the height of the navel when seated in the chair on its rockers. Set to 21.5 in for a 13 in seat: about 8.5 in above the seat.</small>
       </div>
       <div class="ctl">
         <div class="row"><label for="radius">Bottom radius</label><output id="o-radius"></output></div>
@@ -206,7 +199,7 @@ a{color:var(--accent)}
       <li><strong>Published:</strong> the radius must be larger than the center of gravity height. With a center of gravity about 25 to 26 in off the floor, 39 to 42 in is the reasonable range, 30 in is tippy and 80 in barely rocks (<a href="https://popularwoodworking.com/design/make-a-chair-that-rocks">Popular Woodworking</a>). Makers report 36 to 48 in overall (<a href="https://finewoodworking.com/forum/rocker-layout">Fine Woodworking forum</a>).</li>
       <li><strong>Published:</strong> normal rocking uses only 8 to 10 in of the rocker, and extra length belongs at the rear.</li>
       <li><strong>Store-bought check:</strong> a <a href="https://www.vandykes.com/rocking-chair-runner-adult-medium/p/204421/">Van Dyke's adult runner</a> is 36 1/4 in long, 1 1/4 in wide and 1 5/8 in tall with a 4 1/4 in end rise, which works out to about a 41 in radius.</li>
-      <li><strong>My own rules, not published standards:</strong> automatic radius is 1.6 times the center of gravity height (it lands in the published range at 25 to 26 in); the 25 degree rock-back reserve; the 5 in front overhang (sized by eye from a porch rocker photo); the 8 degree seat tilt, picked between the 2 to 5 degree range for upright chairs and the 17 degrees a <a href="https://woodworkersjournal.com/?p=6554">Woodworker's Journal</a> editor called extreme (no published optimum exists); the balance point default of one third. Change any of them under Fine tuning.</li>
+      <li><strong>My own rules, not published standards:</strong> automatic radius is 1.6 times the center of gravity height (it lands in the published range at 25 to 26 in); the 25 degree rock-back reserve; the 5 in front overhang (sized by eye from a porch rocker photo); a center of gravity 8.5 in above the seat (the published 25 to 26 in figure less a typical 17 in seat); the 8 degree seat tilt, picked between the 2 to 5 degree range for upright chairs and the 17 degrees a <a href="https://woodworkersjournal.com/?p=6554">Woodworker's Journal</a> editor called extreme (no published optimum exists); the balance point default of one third. Change any of them under Fine tuning.</li>
       <li>The geometry is exact circle math. It treats the legs as plumb when the chair is at rest. Mock up one rocker in scrap or plywood before cutting good stock.</li>
     </ul>
   </section>
@@ -234,10 +227,9 @@ function compute(p){
   };
 }
 function legs(p,g){
-  var rise=p.S*Math.tan(p.seattilt*Math.PI/180), o={};
-  if(p.known==='front'){o.Lf=p.leglen;o.seatF=g.hf+o.Lf;o.seatR=o.seatF-rise;o.Lr=o.seatR-g.hr;}
-  else{o.Lr=p.leglen;o.seatR=g.hr+o.Lr;o.seatF=o.seatR+rise;o.Lf=o.seatF-g.hf;}
-  o.slope=rise/p.S; return o;
+  var th=p.seattilt*Math.PI/180, sl=Math.tan(th), o={slope:sl};
+  o.seatR=p.couch-p.seatT/Math.cos(th)-g.c*sl; o.seatF=o.seatR+p.S*sl;
+  o.Lr=o.seatR-g.hr; o.Lf=o.seatF-g.hf; return o;
 }
 if(typeof module!=='undefined'){module.exports={compute:compute,legs:legs};}
 else (function(){
@@ -256,7 +248,7 @@ else (function(){
     $('radius').disabled=$('auto').checked;
     return {S:+$('spacing').value,R:+$('radius').value,t:+$('depth').value,bal:+$('bal').value/100,
             reserve:+$('reserve').value,front:+$('front').value,cg:cg,
-            known:known,leglen:+$('leglen').value,seattilt:+$('seattilt').value,
+            couch:+$('couch').value,seattilt:+$('seattilt').value,
             seatT:+$('seatt').value};
   }
   function draw(p,g,k){
@@ -322,22 +314,15 @@ else (function(){
     d=g.halfChord; rows+='<tr><td>'+L(d)+' (tip)</td><td>'+L(p.R-Math.sqrt(p.R*p.R-d*d))+'</td></tr>';
     document.querySelector('#stations tbody').innerHTML=rows;
     var k=legs(p,g), bad=k.Lf<1||k.Lr<1;
-    $('leglen-label').textContent=(known==='front'?'Front':'Back')+' leg length';
-    $('o-leglen').textContent=L(p.leglen); $('o-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0'; $('r-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0 back';
-    $('r-lf').textContent=k.Lf<1?'Too short. Lengthen the known leg or reduce tilt.':L(k.Lf);
-    $('r-lr').textContent=k.Lr<1?'Too short. Lengthen the known leg or reduce tilt.':L(k.Lr);
+    $('o-couch').textContent=L(p.couch); $('o-couch2').textContent=L(p.couch); $('o-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0'; $('r-seattilt').textContent=p.seattilt.toFixed(1)+'\u00b0 back';
+    $('r-lf').textContent=k.Lf<1?'Too short. Use a thinner rocker or less tilt.':L(k.Lf);
+    $('r-lr').textContent=k.Lr<1?'Too short. Use a thinner rocker or less tilt.':L(k.Lr);
     $('r-baltop').textContent=bad?'\u2013':L(k.seatR+g.c*k.slope+p.seatT/Math.cos(Math.atan(k.slope)));
     $('r-sf').textContent=bad?'\u2013':L(k.seatF); $('r-sr').textContent=bad?'\u2013':L(k.seatR);
     draw(p,g,k);
   }
-  ['spacing','cg','radius','bal','depth','reserve','front','auto','leglen','seattilt','seatt'].forEach(function(id){$(id).addEventListener('input',update);});
+  ['spacing','cg','radius','bal','depth','reserve','front','auto','couch','seattilt','seatt'].forEach(function(id){$(id).addEventListener('input',update);});
   function setUnit(u){unit=u;$('u-in').setAttribute('aria-pressed',u==='in');$('u-mm').setAttribute('aria-pressed',u==='mm');update();}
-  function setKnown(v){
-    var p=read(), k=legs(p,compute(p)); known=v;
-    $('leglen').value=Math.min(22,Math.max(6,v==='front'?k.Lf:k.Lr));
-    $('k-front').setAttribute('aria-pressed',v==='front');$('k-back').setAttribute('aria-pressed',v==='back');update();}
-  $('k-front').addEventListener('click',function(){if(known!=='front')setKnown('front');});
-  $('k-back').addEventListener('click',function(){if(known!=='back')setKnown('back');});
   $('u-in').addEventListener('click',function(){setUnit('in');});
   $('u-mm').addEventListener('click',function(){setUnit('mm');});
   update();
